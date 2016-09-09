@@ -1,13 +1,51 @@
 <!DOCTYPE HTML>
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <title>Getting Started: Serving Web Content</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8; text/javascript" />
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js"
+            id="dropboxjs" data-app-key="inlmfmyg873kona"></script>
 </head>
 <body>
 <p>Get your greeting <a href="/hello">here</a></p>
-<form action="dropbox-authenticate" method="post">
-    <button type="submit">Login to Dropbox</button>
-</form>
+<div th:if="${logged == 'logged'}">
+    <div id="container"></div>
+    <div>
+    The name is: <span th:text="${userDisplayName}">USERNAME</span>
+    <div><img th:src="${userProfilePhoto}" /></div>
+    </div>
+    <div>
+        Selected photos:
+        <div id="photos"></div>
+    </div>
+    <div th:each="file : ${fileList}">
+        <div th:text="${file}">text</div>
+    </div>
+    <script type="text/javascript" >
+        var options = {
+            success: function(files) {
+                var photos = document.getElementById('photos');
+                var text = "<ul>";
+                files.forEach(function(file) {
+                    var icon = file.link;
+                    text += "<li>" + icon + "</li>";
+                });
+                text += "</ul>";
+                photos.innerHTML = text;
+            },
+            linkType: "preview",
+            multiselect: true,
+            extensions:['.jpg','.jpeg']
+        };
+        var button = Dropbox.createChooseButton(options);
+        document.getElementById("container").appendChild(button);
+    </script>
+</div>
+<div th:unless="${logged == 'logged'}">
+    <form action="dropbox-authenticate" method="post">
+        <button type="submit">Login to Dropbox</button>
+    </form>
+</div>
+
 </body>
 </html>

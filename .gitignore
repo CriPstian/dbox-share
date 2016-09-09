@@ -1,0 +1,6 @@
+# ignore IDEA related files
+.idea/
+dbox-share.iml
+
+#ignore generated resources
+target/

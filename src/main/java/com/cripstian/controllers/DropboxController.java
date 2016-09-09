@@ -4,6 +4,7 @@ import com.dropbox.core.*;
 import com.dropbox.core.util.LangUtil;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,8 +42,35 @@ public class DropboxController {
     }
 
     @RequestMapping(value = "/dropbox-auth-finish", method = RequestMethod.GET)
-    public void finalizeAuthentication() {
-        System.out.println("NEBUNIE");
+    public void finalizeAuthentication(final HttpServletRequest request,
+                                       final HttpServletResponse response) throws IOException {
+        DbxAuthFinish authFinish = null;
+
+        try {
+            authFinish = getWebAuth(request)
+                    .finishFromRedirect(
+                            getUrl(request, "/dropbox-auth-finish"),
+                            getSessionStore(request),
+                            request.getParameterMap()
+                    );
+        } catch(DbxWebAuth.BadRequestException e) {
+            e.printStackTrace();
+        } catch(DbxException e) {
+            e.printStackTrace();
+        } catch(DbxWebAuth.ProviderException e) {
+            e.printStackTrace();
+        } catch(DbxWebAuth.NotApprovedException e) {
+            e.printStackTrace();
+        } catch(DbxWebAuth.CsrfException e) {
+            e.printStackTrace();
+        } catch(DbxWebAuth.BadStateException e) {
+            e.printStackTrace();
+        }
+
+        final String accessToken = authFinish.getAccessToken();
+        final HttpSession session = request.getSession(true);
+        session.setAttribute("dropboxToken", accessToken);
+        response.sendRedirect("/");
     }
 
     private DbxAppInfo getDbxAppInfo() {
@@ -68,12 +96,12 @@ public class DropboxController {
     }
 
     private DbxWebAuth getWebAuth(final HttpServletRequest request) {
-        return new DbxWebAuth(getRequestConfig(request), getDbxAppInfo());
+        return new DbxWebAuth(requestConfig(), getDbxAppInfo());
     }
 
-    private DbxRequestConfig getRequestConfig(final HttpServletRequest request) {
+    @Bean
+    public DbxRequestConfig requestConfig() {
         return DbxRequestConfig.newBuilder("example-web-file-browser")
-                .withUserLocaleFrom(request.getLocale())
                 .build();
     }
 }
