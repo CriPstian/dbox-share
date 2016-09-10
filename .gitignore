@@ -4,3 +4,6 @@ dbox-share.iml
 
 #ignore generated resources
 target/
+bower.json
+node_modules/
+package.json

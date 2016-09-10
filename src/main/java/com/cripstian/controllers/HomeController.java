@@ -15,34 +15,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 public class HomeController {
 
     private static final String LOGGED = "logged";
 
+    private final DbxRequestConfig requestConfig;
+
     @Autowired
-    private DbxRequestConfig requestConfig;
+    public HomeController(DbxRequestConfig requestConfig) {
+        this.requestConfig = Objects.requireNonNull(requestConfig, "requestConfig must not be null.");
+    }
 
     @RequestMapping(value = "/")
     public String home(final HttpServletRequest request, final Model model) throws DbxException {
         final HttpSession session = request.getSession(true);
         final Object token = session.getAttribute("dropboxToken");
         if(token != null) {
-            model.addAttribute("logged", LOGGED);
+            model.addAttribute(LOGGED, LOGGED);
             final DbxClientV2 client = new DbxClientV2(requestConfig, token.toString());
             FullAccount account = client.users().getCurrentAccount();
             model.addAttribute("userDisplayName", account.getName().getDisplayName());
-            model.addAttribute("fileList", listFilesInPath(client, ""));
             model.addAttribute("userProfilePhoto", client.users().getCurrentAccount().getProfilePhotoUrl());
         }
         return "index";
-    }
-
-    @RequestMapping(value = "/hello")
-    public String hello(final Model model) {
-        model.addAttribute("name", "CriPstian");
-        return "hello";
     }
 
     private List<String> listFilesInPath(final DbxClientV2 client, final String path) {

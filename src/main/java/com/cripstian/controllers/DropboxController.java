@@ -33,7 +33,8 @@ public class DropboxController {
                                final HttpServletResponse httpServletResponse)
             throws IOException, ServletException {
         final DbxWebAuth.Request request = DbxWebAuth.newRequestBuilder()
-                .withRedirectUri(getUrl(httpServletRequest, "/dropbox-auth-finish"), getSessionStore(httpServletRequest))
+                .withRedirectUri(getUrl(httpServletRequest, "/dropbox-auth-finish"),
+                        getSessionStore(httpServletRequest))
                 .build();
 
         final String authorizeUrl = getWebAuth(httpServletRequest).authorize(request);
